@@ -199,14 +199,14 @@ nomask = imresize(nomask_origin, [256 256]); % 사이즈 256x256으로 조정
 figure(13);
 subplot(2,2,1);
 % 흰색 마스크 테스트
-%imshow(whitemask), title('원영상');
-%mask_gray = rgb2gray(whitemask); % 회색조로 변경 - test할 사진 입력
+imshow(whitemask), title('원영상');
+mask_gray = rgb2gray(whitemask); % 회색조로 변경 - test할 사진 입력
 % 검정 마스크 테스트
 %imshow(blackmask), title('원영상');
 %mask_gray = rgb2gray(blackmask); % 회색조로 변경 - test할 사진 
 % 노마스크 테스트
-imshow(nomask), title('원영상');
-mask_gray = rgb2gray(nomask); % 회색조로 변경 - test할 사진 입력
+%imshow(nomask), title('원영상');
+%mask_gray = rgb2gray(nomask); % 회색조로 변경 - test할 사진 입력
 
 % convolution 적용
 windowSize = 7;
@@ -246,3 +246,5 @@ elseif(threshold2 >= 8000)
 else
     fprintf('마스크를 착용하지 않았습니다.')
 end
+
+saveas(figure(13),'task13-whitemask','png');
