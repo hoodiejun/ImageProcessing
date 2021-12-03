@@ -188,17 +188,26 @@ clc;
 clear;
 
 % 마스크 이미지 불러오기
-mask_origin = imread('mask.jpeg', 'jpeg'); % 마스크 쓴 이미지
-mask = imresize(mask_origin, [256 256]); % 사이즈 256x256으로 조정
+whitemask_origin = imread('whitemask.jpeg', 'jpeg'); % 흰색 마스크 이미지
+whitemask = imresize(whitemask_origin, [256 256]); % 사이즈 256x256으로 조정
+blackmask_origin = imread('blackmask.jpeg', 'jpeg'); % 검정 마스크 이미지
+blackmask = imresize(blackmask_origin, [256 256]); % 사이즈 256x256으로 조정
 nomask_origin = imread('nomask.jpeg', 'jpeg'); % 마스크 안 쓴 이미지
 nomask = imresize(nomask_origin, [256 256]); % 사이즈 256x256으로 조정
 
 % 마스크 사진 Display
 figure(13);
 subplot(2,2,1);
-imshow(mask), title('원영상');
+% 흰색 마스크 테스트
+%imshow(whitemask), title('원영상');
+%mask_gray = rgb2gray(whitemask); % 회색조로 변경 - test할 사진 입력
+% 검정 마스크 테스트
+%imshow(blackmask), title('원영상');
+%mask_gray = rgb2gray(blackmask); % 회색조로 변경 - test할 사진 
+% 노마스크 테스트
+imshow(nomask), title('원영상');
+mask_gray = rgb2gray(nomask); % 회색조로 변경 - test할 사진 입력
 
-mask_gray = rgb2gray(mask); % 회색조로 변경 - test할 사진 입력
 % convolution 적용
 windowSize = 7;
 kernel = ones(windowSize) / windowSize ^ 2;
@@ -228,9 +237,12 @@ for i=1:256
     end
 end
 
-% Threshold2 12000개 이상이면 mask 착용했다고 판단
+% Threshold2 12000개 이상이면 흰색 마스크 착용했다고 판단
 if(threshold2 >= 12000)
-    fprintf('마스크를 착용했습니다!');
+    fprintf('흰색 마스크를 착용했습니다!');
+% Threshold2 8000개 이상이면 검정 마스크 착용했다고 판단
+elseif(threshold2 >= 8000)
+    fprintf('검정 마스크를 착용했습니다!');
 else
-    fprintf('마스크를 착용하지 않았습니다.');
+    fprintf('마스크를 착용하지 않았습니다.')
 end
