@@ -81,7 +81,6 @@ figure(9);
 M = 256;
 N = 256;
 D0 = 30;
-
 u = 0:(M-1);
 idx = find(u>M/2);
 u(idx) = u(idx)-M;
@@ -92,13 +91,12 @@ v(idy) = v(idy)-N;
 D = sqrt(U.^2+V.^2);
 H = double(D <= D0);
 G = H.*fftFiltered;
-
 lowpass_filtered = real(ifft2(double(G))); % 푸리에 역변환
 imshow(lowpass_filtered, [ ]), title('Low pass 필터');
   
 % Task 10 - 주파수 영역에서 high pass filter (임의로 설정), Fourier 역변환을 통한 filtered 영상 디스플레이
 figure(10);
-D1 = 0;
+D1 = -30;
 H = double(D > D1);
 G = H.*fftFiltered;
 highpass_filtered = real(ifft2(double(G)));
@@ -110,8 +108,8 @@ H1 = double(D <= D0);
 H2 = double(D > D1);
 G1 = H1.*fftFiltered;
 G2 = H2.*G1;
-bandpass_filtered = real(ifft2(double(G2)));
-imshow(bandpass_filtered, [ ]), title("Band pass 필터");
+highpass_filtered = real(ifft2(double(G2)));
+imshow(highpass_filtered, [ ]), title("Band pass 필터");
 
 %---------------------------------------------------------------
 % Task 12 –특정 주파수 잡음에 의해 왜곡된 영상을 복원하는 프로그램 작성.
@@ -120,33 +118,35 @@ imshow(bandpass_filtered, [ ]), title("Band pass 필터");
 % (2) 특정 영역들의 noise 들을 제거.
 %     특정 영역들을 (i) 0 으로 처리하거나, (ii) 인접한 주파수 값들로 처리
 % (3) Inverse Fourier 변환으로 영상 복원.
-clc;
-clear;
 
-% 주파수 잡음에 왜곡된 영상 불러오기
 fid2 = fopen('noised_lena.raw','r');
 noised_lena_raw  = fread(fid2, 'float64');
 fclose(fid2);
 noised_lena = reshape(noised_lena_raw,[256,256,3]);
 
 figure(12);
-
-% 노이즈 파악
-noisedlenaF = fft2(noised_lena);
-noisedlenaMag = abs(noisedlenaF);
-noisedlenaFCenter = fftshift(noisedlenaF);
-nosiedlenaLog = log(1+abs(noisedlenaFCenter));
-subplot(2,2,1);
-imshow(log(noisedlenaMag),[]), title('Magnitude-FT');  
-subplot(2,2,2);
-imshow(nosiedlenaLog,[]), title('Log scale');
-
-% 비교를 위해 왜곡된 영상 Display
-subplot(2,2,3);
+subplot(3,3,1);
 imshow(noised_lena), title('왜곡된 Lena')
 
+% 노이즈 파악
+% Fourier Transform
+noisedlenaF = fft2(noised_lena);
+% Magnitude
+noisedlenaMag = abs(noisedlenaF);
+% Centered Spectrum
+noisedlenaCenter = fftshift(noisedlenaF);
+% log Transform
+nosiedlenaLog = log(1+abs(noisedlenaCenter));
+
+subplot(3,3,2);
+imshow(log(noisedlenaMag),[]), title('Magnitude - FT');
+subplot(3,3,3);
+imshow(log(abs(noisedlenaCenter)),[]), title('Centered Spectrum');    
+subplot(3,3,4);
+imshow(nosiedlenaLog,[]), title('Log Transform');
+
 % 인접한 주파수 값으로 처리
-subplot(2,2,4)
+subplot(3,3,5)
 M = 256;
 N = 256;
 u = 0:(M-1);
@@ -158,13 +158,14 @@ v(idy) = v(idy)-N;
 [V, U] = meshgrid(v, u);
 D = sqrt(U.^2+V.^2);
 
-D0 = 60;
-H = double(D <= D0);
-G = H.*noisedlenaF;
+H1 = double(D <= D0);
+H2 = double(D > D1);
+G1 = H1.*noisedlenaF;
+G2 = H2.*G1;
+highpass_filtered = real(ifft2(double(G2)));
+imshow(highpass_filtered, [ ]), title("Band pass 필터로 노이즈 제");
+    
 
-% Inverse Fourier 변환으로 영상 복원
-lowpass_filtered = real(ifft2(double(G)));
-imshow(lowpass_filtered, [ ]), title("Low pass 적용");
 
 % Task 13 – 흑/백 마스크 및 마스크를 쓰지 않은 자신의 영상에서의 흑색/백색 마스크를 착용하였는지 여부를 판단하는 프로그램 작성. (자신의 사진은 가급적 256x256 크기 영상으로 변환할 것., color 또는 gray scale 영상은 임의로 선택할 것)
 % Hint (Task 13)
