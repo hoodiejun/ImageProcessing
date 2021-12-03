@@ -172,5 +172,55 @@ imshow(lowpass_filtered, [ ]), title("Low pass 적용");
 % (2) Thresholding한 영상에서 1로 할당한 영역이 마스크 영역과 일치하는지를 확인.
 %     필요시 kernel 크기와 threshold1 값을 조절.
 % (3) Thresholding한 영상에서 pixel 의 값이 1 인 pixel의 개수를 counting 하여  적당한 값(threshold 2) 이상이면 마스크를 착용한 것으로 판정. 
-% (4) (1)-(3) 과정을 변형하여 마스크의 색깔을 구분할 수 있는 프로그램 작성  
+% (4) (1)-(3) 과정을 변형하여 마스크의 색깔을 구분할 수 있는 프로그램 작성
 % (5) 주어진 영상들 모두에서 잘 동작하는 kernel의 크기, threshold 1 값, threshold 2 값과 이들로 얻은 Threshold 영상, 원영상들을 reporting.
+clc;
+clear;
+
+% 주파수 잡음에 왜곡된 영상 불러오기
+mask_origin = imread('mask.jpeg', 'jpeg');
+mask = imresize(mask_origin, [256 NaN]);
+nomask_origin = imread('nomask.jpeg', 'jpeg');
+nomask = imresize(nomask_origin, [256 NaN]);
+
+% 마스크 사진 Display
+figure(13);
+subplot(2,2,1);
+imshow(mask), title('원영상');
+
+mask_gray = rgb2gray(mask); % 회색조로 변경 - test할 사진 입력
+
+windowSize = 7;
+kernel = ones(windowSize) / windowSize ^ 2;
+conv_img = conv2(mask_gray, kernel, 'same');
+subplot(2, 2, 2), imshow(conv_img, []), title('7x7 커널');
+
+% Thresholding 적용
+threshold1 = 200;
+for i=1:256
+    for j=1:256
+        if(conv_img(i,j) >= threshold1)
+            conv_img(i,j) = 1;
+        else
+            conv_img(i,j) = 0;
+        end
+    end
+end
+subplot(2, 2, 3), imshow(conv_img, []), title('Thresholding 적용');
+
+% 1이상인 pixel 개수 counting
+threshold2 = 0;
+for i=1:256
+    for j=1:256
+        if(conv_img(i,j) >= 1)
+            threshold2 = threshold2 + 1;
+        end
+    end
+end
+
+% Threshold2 12000개 이상이면 mask 착용했다고 판단
+if(threshold2 >= 12000)
+    fprintf('마스크를 착용했습니다!');
+else
+    fprintf('마스크를 착용하지 않았습니다.');
+end
