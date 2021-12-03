@@ -26,12 +26,12 @@ imshow(inverseGrayImage), title('grey level 반전 Lena');
 figure(4);
 subplot(2, 2, 1), imshow(lena_rgb), title('원본');
 
-windowSize = 3;
+windowSize = 3; % 커널 사이즈
 kernel = ones(windowSize) / windowSize ^ 2;
 R = conv2(lena_rgb(:,:,1), kernel, 'same');
 G = conv2(lena_rgb(:,:,2), kernel, 'same');
 B = conv2(lena_rgb(:,:,3), kernel, 'same');
-blurredImage = cat(3,R,G,B);
+blurredImage = cat(3,R,G,B); % R G B 값 결합
 subplot(2, 2, 2), imshow(blurredImage, []), title('3x3 이동평균 필터 적용');
 
 windowSize = 5;
@@ -58,7 +58,15 @@ imshow(B_laplacian), title('Laplacian 필터 적용');
 
 % Task 6 – Laplacian filter 적용 영상과 원영상을 적당한 가중치로 합하여 영상 개선
 figure(6);
-
+enhancement_lena = zeros([256 256 3]); % 개선된 영상을 담을 빈 행렬 생성
+for i=1:256
+    for j=1:256
+        for k=1:3
+            enhancement_lena(i,j,k) = B_laplacian(i,j,k)*0.4 + lena_rgb(i,j,k)*0.6;
+        end
+    end
+end
+imshow(enhancement_lena), title('개선된 이미지');
 
 %[R,G,B] 각 component 별로 아래의 task 수행.
 % Task 7 – 이차원 Fourier 변환 (dc 가 가운데 위치)
@@ -81,7 +89,7 @@ figure(9);
 M = 256;
 N = 256;
 D0 = 30;
-
+% 필터 생성
 u = 0:(M-1);
 idx = find(u>M/2);
 u(idx) = u(idx)-M;
@@ -90,6 +98,7 @@ idy = find(v>N/2);
 v(idy) = v(idy)-N;
 [V, U] = meshgrid(v, u);
 D = sqrt(U.^2+V.^2);
+% 필터 적용
 H = double(D <= D0);
 G = H.*fftFiltered;
 
@@ -106,6 +115,7 @@ imshow(highpass_filtered, [ ]), title("High pass 필터");
  
 % Task 11 - 주파수 영역에서 band pass filter (임의로 설정), Fourier 역변환을 통한 filtered 영상 디스플레이
 figure(11);
+% 저주파 고주파 제외하고 pass
 H1 = double(D <= D0);
 H2 = double(D > D1);
 G1 = H1.*fftFiltered;
@@ -177,11 +187,11 @@ imshow(lowpass_filtered, [ ]), title("Low pass 적용");
 clc;
 clear;
 
-% 주파수 잡음에 왜곡된 영상 불러오기
-mask_origin = imread('mask.jpeg', 'jpeg');
-mask = imresize(mask_origin, [256 NaN]);
-nomask_origin = imread('nomask.jpeg', 'jpeg');
-nomask = imresize(nomask_origin, [256 NaN]);
+% 마스크 이미지 불러오기
+mask_origin = imread('mask.jpeg', 'jpeg'); % 마스크 쓴 이미지
+mask = imresize(mask_origin, [256 256]); % 사이즈 256x256으로 조정
+nomask_origin = imread('nomask.jpeg', 'jpeg'); % 마스크 안 쓴 이미지
+nomask = imresize(nomask_origin, [256 256]); % 사이즈 256x256으로 조정
 
 % 마스크 사진 Display
 figure(13);
@@ -189,14 +199,14 @@ subplot(2,2,1);
 imshow(mask), title('원영상');
 
 mask_gray = rgb2gray(mask); % 회색조로 변경 - test할 사진 입력
-
+% convolution 적용
 windowSize = 7;
 kernel = ones(windowSize) / windowSize ^ 2;
 conv_img = conv2(mask_gray, kernel, 'same');
 subplot(2, 2, 2), imshow(conv_img, []), title('7x7 커널');
 
 % Thresholding 적용
-threshold1 = 200;
+threshold1 = 200; % 200 이상이면 pixel 값 1로 변경
 for i=1:256
     for j=1:256
         if(conv_img(i,j) >= threshold1)
