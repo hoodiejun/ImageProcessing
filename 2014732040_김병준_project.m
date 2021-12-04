@@ -246,5 +246,3 @@ elseif(threshold2 >= 8000)
 else
     fprintf('마스크를 착용하지 않았습니다.')
 end
-
-saveas(figure(13),'task13-whitemask','png');
